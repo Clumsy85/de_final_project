@@ -1,5 +1,6 @@
 import tweepy
 import json
+import re
 from datetime import datetime
 from aws_services.def_boto3_aws import write_log_dynamodb
 import pandas as pd
@@ -19,9 +20,12 @@ auth.set_access_token(access_token, access_secret)
 api = tweepy.API(auth)
 client = tweepy.Client(bearer_token=bearer_token)
 
+# to remove non-ascii chars like emojies
+def remove_non_ascii(text):
+    return re.sub(r'[^\x00-\x7F]+', '', text)
+
 
 # Replace the limit=1000 with the maximum number of Tweets you want
-
 
 def get_tweets_data(word, num_of_tweets=5):
     try:
@@ -39,6 +43,7 @@ def get_tweets_data(word, num_of_tweets=5):
             tweet_time.append(tweet.created_at)
             likes_count = api.get_status(tweet["id"]).favorite_count
             likes.append(likes_count)
+            tweet.text = remove_non_ascii(tweet.text)
             tweets.append(tweet.text.encode("ascii", "ignore").decode())
             source.append('twitter')
 
