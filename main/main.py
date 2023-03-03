@@ -1,4 +1,5 @@
 import json
+import re
 from flask import Flask, request, render_template
 from twitter.def_twitter_data import get_tweets_data
 import time
@@ -16,6 +17,9 @@ from google_services.def_google_services import sentimental_api, sentimental_api
 get_user_input = {}
 tweeter_data = ''
 check_user_input = True
+
+def remove_non_ascii(text):
+    return re.sub(r'[^\x00-\x7F]+', '', text)
 
 '''
 flask start here
@@ -44,6 +48,7 @@ def ui_submit_data():
     request_key = data["From Date"]
     for specialChar in specialChars:
         request_key = request_key.replace(specialChar, '')
+    request_key = remove_non_ascii(request_key)
 
     # convert the keywords for the request_key
     keywords_for_req_key = data["keywords"].replace(',', '_')
